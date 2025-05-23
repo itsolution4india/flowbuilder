@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .left-panel {
+            width: 50%;
+            background: white;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            width: 50%;
+            background: #fafafa;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .title-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .title-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .add-content-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .add-content-btn:hover {
+            background: #0056b3;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .subdropdown {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .dropdown-item:hover .subdropdown {
+            display: block;
+        }
+
+        .content-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .preview-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .preview-content {
+            min-height: 200px;
+        }
+
+        .preview-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .text-heading {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .text-subheading {
+            font-size: 20px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .text-body {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .text-caption {
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .json-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .json-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .json-output {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .content-list {
+            margin-top: 20px;
+        }
+
+        .content-type-label {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h2>Content Builder</h2>
+            <input type="text" id="titleInput" class="title-input" placeholder="Enter screen title">
+            
+            <div class="dropdown">
+                <button class="add-content-btn" onclick="toggleDropdown()">Add Content</button>
+                <div id="dropdownContent" class="dropdown-content">
+                    <div class="dropdown-item" onmouseover="showSubdropdown(this)" onmouseleave="hideSubdropdown(this)">
+                        Text
+                        <div class="subdropdown">
+                            <div class="dropdown-item" onclick="addTextContent('TextHeading')">Large Heading</div>
+                            <div class="dropdown-item" onclick="addTextContent('TextSubheading')">Small Heading</div>
+                            <div class="dropdown-item" onclick="addTextContent('TextBody')">Body Message</div>
+                            <div class="dropdown-item" onclick="addTextContent('TextCaption')">Caption</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-item" onclick="alert('Text Answer - Coming Soon!')">Text Answer</div>
+                    <div class="dropdown-item" onclick="alert('Selection - Coming Soon!')">Selection</div>
+                </div>
+            </div>
+
+            <div id="contentList" class="content-list">
+                <!-- Dynamic content will be added here -->
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="preview-section">
+                <div class="preview-title">Preview</div>
+                <div id="previewContent" class="preview-content">
+                    <p style="color: #888; text-align: center;">Add content to see preview</p>
+                </div>
+            </div>
+
+            <div class="json-section">
+                <div class="json-header">
+                    <h3>JSON Output</h3>
+                    <button class="copy-btn" onclick="copyJSON()">Copy JSON</button>
+                </div>
+                <div id="jsonOutput" class="json-output">
+                    <!-- JSON will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let contentItems = [];
+        let contentCounter = 0;
+
+        function toggleDropdown() {
+            document.getElementById("dropdownContent").classList.toggle("show");
+        }
+
+        function showSubdropdown(element) {
+            const subdropdown = element.querySelector('.subdropdown');
+            if (subdropdown) {
+                subdropdown.style.display = 'block';
+            }
+        }
+
+        function hideSubdropdown(element) {
+            const subdropdown = element.querySelector('.subdropdown');
+            if (subdropdown) {
+                subdropdown.style.display = 'none';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.add-content-btn')) {
+                const dropdowns = document.getElementsByClassName("dropdown-content");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        function addTextContent(type) {
+            const contentId = `content_${contentCounter++}`;
+            const contentItem = {
+                id: contentId,
+                type: type,
+                text: ''
+            };
+            
+            contentItems.push(contentItem);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'content-item';
+            contentDiv.id = contentId;
+            contentDiv.innerHTML = `
+                <div style="flex: 1;">
+                    <div class="content-type-label">${getTypeLabel(type)}</div>
+                    <input type="text" class="content-input" placeholder="Enter ${getTypeLabel(type).toLowerCase()}" 
+                           onchange="updateContent('${contentId}', this.value)">
+                </div>
+                <button class="delete-btn" onclick="deleteContent('${contentId}')">Delete</button>
+            `;
+            
+            document.getElementById('contentList').appendChild(contentDiv);
+            document.getElementById("dropdownContent").classList.remove("show");
+            
+            updatePreview();
+            updateJSON();
+        }
+
+        function getTypeLabel(type) {
+            const labels = {
+                'TextHeading': 'Large Heading',
+                'TextSubheading': 'Small Heading',
+                'TextBody': 'Body Message',
+                'TextCaption': 'Caption'
+            };
+            return labels[type] || type;
+        }
+
+        function updateContent(contentId, value) {
+            const item = contentItems.find(item => item.id === contentId);
+            if (item) {
+                item.text = value;
+                updatePreview();
+                updateJSON();
+            }
+        }
+
+        function deleteContent(contentId) {
+            contentItems = contentItems.filter(item => item.id !== contentId);
+            document.getElementById(contentId).remove();
+            updatePreview();
+            updateJSON();
+        }
+
+        function updatePreview() {
+            const previewContent = document.getElementById('previewContent');
+            
+            if (contentItems.length === 0) {
+                previewContent.innerHTML = '<p style="color: #888; text-align: center;">Add content to see preview</p>';
+                return;
+            }
+            
+            let previewHTML = '';
+            contentItems.forEach(item => {
+                if (item.text) {
+                    const className = item.type.toLowerCase().replace('text', 'text-');
+                    previewHTML += `<div class="preview-item"><div class="${className}">${item.text}</div></div>`;
+                }
+            });
+            
+            previewContent.innerHTML = previewHTML || '<p style="color: #888; text-align: center;">Enter text in the fields to see preview</p>';
+        }
+
+        function updateJSON() {
+            const title = document.getElementById('titleInput').value || 'MY_FIRST_SCREEN';
+            
+            const children = contentItems
+                .filter(item => item.text)
+                .map(item => ({
+                    type: item.type,
+                    text: item.text
+                }));
+            
+            // Add footer if there are content items
+            if (children.length > 0) {
+                children.push({
+                    type: "Footer",
+                    label: "Static footer label",
+                    "on-click-action": {
+                        name: "complete",
+                        payload: {}
+                    }
+                });
+            }
+            
+            const jsonData = {
+                version: "7.0",
+                screens: [
+                    {
+                        id: title.toUpperCase().replace(/\s+/g, '_'),
+                        title: title.toUpperCase().replace(/\s+/g, '_'),
+                        terminal: true,
+                        success: true,
+                        data: {},
+                        layout: {
+                            type: "SingleColumnLayout",
+                            children: children
+                        }
+                    }
+                ]
+            };
+            
+            document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
+        }
+
+        function copyJSON() {
+            const jsonText = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(jsonText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#218838';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#28a745';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Initialize with empty JSON
+        document.getElementById('titleInput').addEventListener('input', updateJSON);
+        updateJSON();
+    </script>
+</body>
+</html>
