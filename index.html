@@ -242,10 +242,59 @@
             margin-top: 20px;
         }
 
-        .content-type-label {
-            font-weight: bold;
-            color: #007bff;
+        .form-input-group {
+            margin-bottom: 10px;
+        }
+
+        .form-input-group label {
+            display: block;
             margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .preview-form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .preview-form-input[type="date"] {
+            color: #666;
+        }
+
+        .preview-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .preview-form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .preview-form-group {
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -267,7 +316,14 @@
                             <div class="dropdown-item" onclick="addTextContent('TextCaption')">Caption</div>
                         </div>
                     </div>
-                    <div class="dropdown-item" onclick="alert('Text Answer - Coming Soon!')">Text Answer</div>
+                    <div class="dropdown-item" onmouseover="showSubdropdown(this)" onmouseleave="hideSubdropdown(this)">
+                        Text Answer
+                        <div class="subdropdown">
+                            <div class="dropdown-item" onclick="addTextAnswerContent('short-answer')">Short Answer</div>
+                            <div class="dropdown-item" onclick="addTextAnswerContent('paragraph')">Paragraph</div>
+                            <div class="dropdown-item" onclick="addTextAnswerContent('date-picker')">Date Picker</div>
+                        </div>
+                    </div>
                     <div class="dropdown-item" onclick="alert('Selection - Coming Soon!')">Selection</div>
                 </div>
             </div>
@@ -300,6 +356,7 @@
     <script>
         let contentItems = [];
         let contentCounter = 0;
+        let formFields = [];
 
         function toggleDropdown() {
             document.getElementById("dropdownContent").classList.toggle("show");
@@ -361,6 +418,111 @@
             updateJSON();
         }
 
+        function addTextAnswerContent(answerType) {
+            const contentId = `content_${contentCounter++}`;
+            let contentItem;
+            
+            if (answerType === 'short-answer') {
+                contentItem = {
+                    id: contentId,
+                    type: 'TextInput',
+                    answerType: 'short-answer',
+                    label: '',
+                    inputType: 'text',
+                    name: '',
+                    required: true
+                };
+            } else if (answerType === 'paragraph') {
+                contentItem = {
+                    id: contentId,
+                    type: 'TextArea',
+                    answerType: 'paragraph',
+                    label: '',
+                    name: '',
+                    required: true
+                };
+            } else if (answerType === 'date-picker') {
+                contentItem = {
+                    id: contentId,
+                    type: 'DatePicker',
+                    answerType: 'date-picker',
+                    label: '',
+                    name: '',
+                    required: true
+                };
+            }
+            
+            contentItems.push(contentItem);
+            formFields.push(contentItem);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'content-item';
+            contentDiv.id = contentId;
+            
+            let inputTypeDropdown = '';
+            if (answerType === 'short-answer') {
+                inputTypeDropdown = `
+                    <div class="form-input-group">
+                        <label>Input Type:</label>
+                        <select onchange="updateInputType('${contentId}', this.value)">
+                            <option value="text">Text</option>
+                            <option value="password">Password</option>
+                            <option value="email">Email</option>
+                            <option value="number">Number</option>
+                        </select>
+                    </div>
+                `;
+            }
+            
+            contentDiv.innerHTML = `
+                <div style="flex: 1;">
+                    <div class="content-type-label">${getAnswerTypeLabel(answerType)}</div>
+                    <div class="form-input-group">
+                        <label>Label:</label>
+                        <input type="text" class="content-input" placeholder="Enter label" 
+                               onchange="updateAnswerLabel('${contentId}', this.value)">
+                    </div>
+                    ${inputTypeDropdown}
+                </div>
+                <button class="delete-btn" onclick="deleteContent('${contentId}')">Delete</button>
+            `;
+            
+            document.getElementById('contentList').appendChild(contentDiv);
+            document.getElementById("dropdownContent").classList.remove("show");
+            
+            updatePreview();
+            updateJSON();
+        }
+
+        function getAnswerTypeLabel(answerType) {
+            const labels = {
+                'short-answer': 'Short Answer',
+                'paragraph': 'Paragraph',
+                'date-picker': 'Date Picker'
+            };
+            return labels[answerType] || answerType;
+        }
+
+        function updateAnswerLabel(contentId, value) {
+            const item = contentItems.find(item => item.id === contentId);
+            if (item) {
+                item.label = value;
+                // Generate name based on label
+                item.name = generateFieldName(value);
+                updatePreview();
+                updateJSON();
+            }
+        }
+
+        function updateInputType(contentId, value) {
+            const item = contentItems.find(item => item.id === contentId);
+            if (item) {
+                item.inputType = value;
+                updatePreview();
+                updateJSON();
+            }
+        }
+
         function getTypeLabel(type) {
             const labels = {
                 'TextHeading': 'Large Heading',
@@ -382,6 +544,7 @@
 
         function deleteContent(contentId) {
             contentItems = contentItems.filter(item => item.id !== contentId);
+            formFields = formFields.filter(item => item.id !== contentId);
             document.getElementById(contentId).remove();
             updatePreview();
             updateJSON();
@@ -396,28 +559,107 @@
             }
             
             let previewHTML = '';
-            contentItems.forEach(item => {
+            
+            // Separate text content and form fields
+            const textItems = contentItems.filter(item => ['TextHeading', 'TextSubheading', 'TextBody', 'TextCaption'].includes(item.type));
+            const formItems = contentItems.filter(item => ['TextInput', 'TextArea', 'DatePicker'].includes(item.type));
+            
+            // Add text content
+            textItems.forEach(item => {
                 if (item.text) {
                     const className = item.type.toLowerCase().replace('text', 'text-');
                     previewHTML += `<div class="preview-item"><div class="${className}">${item.text}</div></div>`;
                 }
             });
             
-            previewContent.innerHTML = previewHTML || '<p style="color: #888; text-align: center;">Enter text in the fields to see preview</p>';
+            // Add form fields
+            if (formItems.length > 0) {
+                previewHTML += '<div class="preview-item" style="background: #fff; border: 1px solid #ddd; padding: 20px;">';
+                formItems.forEach(item => {
+                    if (item.label) {
+                        previewHTML += '<div class="preview-form-group">';
+                        previewHTML += `<label class="preview-form-label">${item.label}</label>`;
+                        
+                        if (item.type === 'TextInput') {
+                            previewHTML += `<input type="${item.inputType}" class="preview-form-input" placeholder="Enter ${item.label.toLowerCase()}" disabled>`;
+                        } else if (item.type === 'TextArea') {
+                            previewHTML += `<textarea class="preview-textarea" placeholder="Enter ${item.label.toLowerCase()}" disabled></textarea>`;
+                        } else if (item.type === 'DatePicker') {
+                            previewHTML += `<input type="date" class="preview-form-input" disabled>`;
+                        }
+                        
+                        previewHTML += '</div>';
+                    }
+                });
+                previewHTML += '</div>';
+            }
+            
+            previewContent.innerHTML = previewHTML || '<p style="color: #888; text-align: center;">Enter content to see preview</p>';
         }
 
         function updateJSON() {
-            const title = document.getElementById('titleInput').value || 'MY_FIRST_SCREEN';
+            const title = document.getElementById('titleInput').value || 'new screen';
+            const screenId = document.getElementById('titleInput').value || 'new screen';
             
-            const children = contentItems
-                .filter(item => item.text)
-                .map(item => ({
-                    type: item.type,
-                    text: item.text
-                }));
+            // Separate text content and form fields
+            const textItems = contentItems.filter(item => ['TextHeading', 'TextSubheading', 'TextBody', 'TextCaption'].includes(item.type));
+            const formItems = contentItems.filter(item => ['TextInput', 'TextArea', 'DatePicker'].includes(item.type));
             
-            // Add footer if there are content items
-            if (children.length > 0) {
+            let children = [];
+            
+            // Add text content directly to children
+            textItems.forEach(item => {
+                if (item.text) {
+                    children.push({
+                        type: item.type,
+                        text: item.text
+                    });
+                }
+            });
+            
+            // Add form if there are form fields
+            if (formItems.length > 0) {
+                const formChildren = [];
+                const payload = {};
+                
+                formItems.forEach((item, index) => {
+                    if (item.label) {
+                        const namelable = `label_${Math.random().toString(36).substr(2, 6)}`
+                        const fieldObj = {
+                            label: item.label,
+                            name: namelable,
+                            required: item.required,
+                            type: item.type
+                        };
+                        
+                        if (item.type === 'TextInput') {
+                            fieldObj['input-type'] = item.inputType;
+                        }
+                        
+                        formChildren.push(fieldObj);
+                        payload[`screen_0_Label_${index}`] = `\${form.${namelable}}`;
+                    }
+                });
+                
+                // Add footer to form
+                if (formChildren.length > 0) {
+                    formChildren.push({
+                        label: "Continue",
+                        "on-click-action": {
+                            name: "complete",
+                            payload: payload
+                        },
+                        type: "Footer"
+                    });
+                }
+                
+                children.push({
+                    children: formChildren,
+                    name: "flow_path",
+                    type: "Form"
+                });
+            } else if (textItems.some(item => item.text)) {
+                // Add regular footer for text-only content
                 children.push({
                     type: "Footer",
                     label: "Static footer label",
@@ -432,10 +674,9 @@
                 version: "7.0",
                 screens: [
                     {
-                        id: title.toUpperCase().replace(/\s+/g, '_'),
-                        title: title.toUpperCase().replace(/\s+/g, '_'),
+                        id: screenId,
+                        title: title,
                         terminal: true,
-                        success: true,
                         data: {},
                         layout: {
                             type: "SingleColumnLayout",
