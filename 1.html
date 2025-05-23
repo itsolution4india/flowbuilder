@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dynamic Form Builder</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary: #8b5cf6;
+    --accent: #06b6d4;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1f2937;
+    --light: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    --gradient-subtle: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    min-height: 100vh;
+    color: var(--dark);
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInDown 1s ease-out;
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .header p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2rem;
+    font-weight: 300;
+  }
+
+  .title-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeInUp 1s ease-out 0.2s both;
+  }
+
+  .title-input-group {
+    position: relative;
+  }
+
+  .title-input-group input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    background: white;
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+
+  .title-input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .title-input-group label {
+    position: absolute;
+    top: -12px;
+    left: 16px;
+    background: white;
+    padding: 0 8px;
+    font-weight: 600;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+  }
+
+  .add-content-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeInUp 1s ease-out 0.4s both;
+  }
+
+  .add-content-form {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+  }
+
+  .select-group {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .select-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .select-group select {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    background: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .select-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary {
+    background: var(--gradient);
+    color: white;
+    box-shadow: var(--shadow);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-secondary {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 2px solid var(--gray-200);
+  }
+
+  .btn-secondary:hover {
+    background: var(--gray-200);
+    transform: translateY(-1px);
+  }
+
+  #builder {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 1024px) {
+    #builder {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeInUp 1s ease-out 0.6s both;
+  }
+
+  .panel h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+  }
+
+  .panel h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--gradient);
+    border-radius: 2px;
+  }
+
+  .content-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .content-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gradient);
+  }
+
+  .content-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .content-type-badge {
+    background: var(--gradient);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+  }
+
+  .options-container {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .option-item {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+  }
+
+  .option-item input {
+    flex: 1;
+  }
+
+  .preview-content {
+    min-height: 400px;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px dashed var(--gray-200);
+    transition: all 0.3s ease;
+  }
+
+  .preview-content:hover {
+    border-color: var(--primary);
+  }
+
+  .empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: var(--gray-400);
+    text-align: center;
+  }
+
+  .json-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeInUp 1s ease-out 0.8s both;
+  }
+
+  .json-output {
+    background: var(--gray-900);
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-family: 'Fira Code', 'Monaco', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 1px solid var(--gray-700);
+    margin-bottom: 1rem;
+  }
+
+  .json-output::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .json-output::-webkit-scrollbar-track {
+    background: var(--gray-800);
+    border-radius: 4px;
+  }
+
+  .json-output::-webkit-scrollbar-thumb {
+    background: var(--gray-600);
+    border-radius: 4px;
+  }
+
+  .json-output::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+  }
+
+  /* Preview Form Styles */
+  .preview-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 1rem 0;
+  }
+
+  .preview-content h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 0.8rem 0;
+  }
+
+  .preview-content p {
+    color: var(--gray-600);
+    margin: 0.5rem 0;
+  }
+
+  .preview-content small {
+    color: var(--gray-500);
+    font-size: 0.8rem;
+  }
+
+  .preview-form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .preview-form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+  }
+
+  .preview-form-group input,
+  .preview-form-group textarea,
+  .preview-form-group select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--gray-50);
+  }
+
+  .preview-form-group fieldset {
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--gray-50);
+  }
+
+  .preview-form-group legend {
+    font-weight: 600;
+    color: var(--gray-700);
+    padding: 0 0.5rem;
+  }
+
+  .radio-group label,
+  .checkbox-group-preview label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+
+  /* Animations */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .content-item {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  /* Floating particles background effect */
+  .bg-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+  .particle:nth-child(2) { width: 60px; height: 60px; left: 20%; animation-delay: 1s; }
+  .particle:nth-child(3) { width: 120px; height: 120px; left: 60%; animation-delay: 2s; }
+  .particle:nth-child(4) { width: 40px; height: 40px; left: 80%; animation-delay: 3s; }
+  .particle:nth-child(5) { width: 100px; height: 100px; left: 40%; animation-delay: 4s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
+    50% { transform: translateY(-100px) rotate(180deg); opacity: 0.3; }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+    }
+
+    .add-content-form {
+      flex-direction: column;
+    }
+
+    .select-group {
+      min-width: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-particles">
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+</div>
+
+<div class="container">
+  <div class="header">
+    <h1>Dynamic Form Builder</h1>
+    <p>Create beautiful, interactive forms with drag-and-drop simplicity</p>
+  </div>
+
+  <div class="title-section">
+    <div class="title-input-group">
+      <label>Screen Title</label>
+      <input type="text" id="titleInput" placeholder="Enter your form title..." />
+    </div>
+  </div>
+
+  <div class="add-content-section">
+    <div class="add-content-form">
+      <div class="select-group">
+        <label>Add Content Type</label>
+        <select id="addContentSelect">
+          <option value="">Choose a content type...</option>
+          <optgroup label="📝 Text Elements">
+            <option value="TextHeading">Large Heading</option>
+            <option value="TextSubheading">Small Heading</option>
+            <option value="TextBody">Body Message</option>
+            <option value="TextCaption">Caption</option>
+          </optgroup>
+          <optgroup label="✏️ Input Fields">
+            <option value="TextInput">Short Answer</option>
+            <option value="TextArea">Paragraph</option>
+            <option value="DatePicker">Date Picker</option>
+          </optgroup>
+          <optgroup label="☑️ Selection Options">
+            <option value="single-choice">Single Choice</option>
+            <option value="multiple-choice">Multiple Choice</option>
+            <option value="dropdown">Dropdown</option>
+            <option value="optin">Opt In Checkbox</option>
+          </optgroup>
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="addContent()">
+        ✨ Add Content
+      </button>
+    </div>
+  </div>
+
+  <div id="builder">
+    <div class="panel">
+      <h3>📋 Content Editor</h3>
+      <div id="contentList">
+        <!-- Content blocks will be added here -->
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h3>👁️ Live Preview</h3>
+      <div class="preview-content" id="previewContent">
+        <div class="empty-preview">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+          <h3>Your form will appear here</h3>
+          <p>Add content elements to see a live preview</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="json-section">
+    <h3>🔧 JSON Output</h3>
+    <div class="json-output" id="jsonOutput">{}</div>
+    <button type="button" class="btn btn-secondary" onclick="copyJSON()">
+      📋 Copy JSON
+    </button>
+  </div>
+</div>
+
+<script>
+  let contentItems = [];
+  let uniqueIdCounter = 1;
+
+  function generateId() {
+    return 'content_' + (uniqueIdCounter++);
+  }
+
+  function addContent() {
+    const select = document.getElementById('addContentSelect');
+    const type = select.value;
+    if (!type) return alert('Please select a content type.');
+
+    let newItem = {
+      id: generateId(),
+      type,
+      label: '',
+      name: '',
+      text: '',
+      options: [],
+      required: false,
+      inputType: 'text',
+      selectionType: '',
+    };
+
+    // Setup defaults for each type
+    if (type.startsWith('Text')) {
+      newItem.text = `Sample ${type}`;
+    } else if (type === 'TextInput') {
+      newItem.label = 'Short Answer';
+      newItem.name = 'short_answer';
+      newItem.inputType = 'text';
+    } else if (type === 'TextArea') {
+      newItem.label = 'Paragraph';
+      newItem.name = 'paragraph';
+    } else if (type === 'DatePicker') {
+      newItem.label = 'Select Date';
+      newItem.name = 'date_picker';
+    } else if (['single-choice', 'multiple-choice', 'dropdown', 'optin'].includes(type)) {
+      newItem.label = 'Select Option';
+      newItem.name = 'selection_' + uniqueIdCounter;
+      newItem.selectionType = type;
+      if (type === 'optin') {
+        newItem.options = [];
+      } else {
+        newItem.options = ['Option 1', 'Option 2'];
+      }
+    }
+
+    contentItems.push(newItem);
+    renderContentList();
+    updatePreview();
+    updateJSON();
+    select.value = '';
+  }
+
+  function renderContentList() {
+    const container = document.getElementById('contentList');
+    container.innerHTML = '';
+    
+    if (contentItems.length === 0) {
+      container.innerHTML = `
+        <div class="empty-preview">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">🔧</div>
+          <p>No content elements yet</p>
+          <p style="font-size: 0.9rem; color: var(--gray-500);">Add some content to get started</p>
+        </div>
+      `;
+      return;
+    }
+    
+    for (const item of contentItems) {
+      container.appendChild(renderContentItem(item));
+    }
+  }
+
+  function renderContentItem(item) {
+    const div = document.createElement('div');
+    div.className = 'content-item';
+    div.id = item.id;
+
+    // Header and delete
+    const header = document.createElement('div');
+    header.className = 'content-header';
+
+    const badge = document.createElement('div');
+    badge.className = 'content-type-badge';
+    badge.textContent = item.type;
+    header.appendChild(badge);
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️ Delete';
+    delBtn.className = 'btn btn-danger';
+    delBtn.onclick = () => {
+      contentItems = contentItems.filter(ci => ci.id !== item.id);
+      renderContentList();
+      updatePreview();
+      updateJSON();
+    };
+    header.appendChild(delBtn);
+    div.appendChild(header);
+
+    // Content based on type
+    if (item.type.startsWith('Text')) {
+      const group = createFormGroup('Text Content:', item.text, val => {
+        item.text = val;
+        updatePreview();
+        updateJSON();
+      });
+      div.appendChild(group);
+
+    } else if (item.type === 'TextInput') {
+      div.appendChild(createFormGroup('Label:', item.label, val => {
+        item.label = val;
+        item.name = toName(val);
+        updatePreview();
+        updateJSON();
+      }));
+
+      const inputTypeSelect = createSelectGroup('Input Type:', ['text', 'email', 'number', 'tel', 'url', 'password'], item.inputType, val => {
+        item.inputType = val;
+        updatePreview();
+        updateJSON();
+      });
+      div.appendChild(inputTypeSelect);
+
+      div.appendChild(createCheckboxGroup('Required:', item.required, val => {
+        item.required = val;
+        updatePreview();
+        updateJSON();
+      }));
+
+    } else if (item.type === 'TextArea') {
+      div.appendChild(createFormGroup('Label:', item.label, val => {
+        item.label = val;
+        item.name = toName(val);
+        updatePreview();
+        updateJSON();
+      }));
+
+      div.appendChild(createCheckboxGroup('Required:', item.required, val => {
+        item.required = val;
+        updatePreview();
+        updateJSON();
+      }));
+
+    } else if (item.type === 'DatePicker') {
+      div.appendChild(createFormGroup('Label:', item.label, val => {
+        item.label = val;
+        item.name = toName(val);
+        updatePreview();
+        updateJSON();
+      }));
+
+      div.appendChild(createCheckboxGroup('Required:', item.required, val => {
+        item.required = val;
+        updatePreview();
+        updateJSON();
+      }));
+
+    } else if (['single-choice', 'multiple-choice', 'dropdown', 'optin'].includes(item.type)) {
+      div.appendChild(createFormGroup('Label:', item.label, val => {
+        item.label = val;
+        item.name = toName(val);
+        updatePreview();
+        updateJSON();
+      }));
+
+      div.appendChild(createCheckboxGroup('Required:', item.required, val => {
+        item.required = val;
+        updatePreview();
+        updateJSON();
+      }));
+
+      if (item.type !== 'optin') {
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'options-container';
+
+        const optionsLabel = document.createElement('div');
+        optionsLabel.innerHTML = '<strong>Options:</strong>';
+        optionsContainer.appendChild(optionsLabel);
+
+        item.options.forEach((opt, idx) => {
+          const optDiv = document.createElement('div');
+          optDiv.className = 'option-item';
+
+          const optInput = document.createElement('input');
+          optInput.type = 'text';
+          optInput.className = 'form-control';
+          optInput.value = opt;
+          optInput.oninput = (e) => {
+            item.options[idx] = e.target.value;
+            updatePreview();
+            updateJSON();
+          };
+
+          const delOptBtn = document.createElement('button');
+          delOptBtn.textContent = '❌';
+          delOptBtn.className = 'btn btn-danger';
+          delOptBtn.onclick = () => {
+            item.options.splice(idx, 1);
+            renderContentList();
+            updatePreview();
+            updateJSON();
+          };
+
+          optDiv.appendChild(optInput);
+          optDiv.appendChild(delOptBtn);
+          optionsContainer.appendChild(optDiv);
+        });
+
+        const addOptBtn = document.createElement('button');
+        addOptBtn.textContent = '➕ Add Option';
+        addOptBtn.className = 'btn btn-success';
+        addOptBtn.onclick = () => {
+          item.options.push('New Option');
+          renderContentList();
+          updatePreview();
+          updateJSON();
+        };
+        optionsContainer.appendChild(addOptBtn);
+
+        div.appendChild(optionsContainer);
+      }
+    }
+
+    return div;
+  }
+
+  function createFormGroup(labelText, value, onChange) {
+    const group = document.createElement('div');
+    group.className = 'form-group';
+
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    group.appendChild(label);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control';
+    input.value = value || '';
+    input.oninput = e => onChange(e.target.value);
+    group.appendChild(input);
+
+    return group;
+  }
+
+  function createCheckboxGroup(labelText, checked, onChange) {
+    const group = document.createElement('div');
+    group.className = 'checkbox-group';
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = checked;
+    input.onchange = e => onChange(e.target.checked);
+
+    const label = document.createElement('label');
+    label.textContent = labelText;
+
+    group.appendChild(input);
+    group.appendChild(label);
+    return group;
+  }
+
+  function createSelectGroup(labelText, options, selectedValue, onChange) {
+    const group = document.createElement('div');
+    group.className = 'form-group';
+
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    group.appendChild(label);
+
+    const select = document.createElement('select');
+    select.className = 'form-control';
+    for (const opt of options) {
+      const option = document.createElement('option');
+      option.value = opt;
+      option.textContent = opt;
+      if (opt === selectedValue) option.selected = true;
+      select.appendChild(option);
+    }
+    select.onchange = e => onChange(e.target.value);
+    group.appendChild(select);
+
+    return group;
+  }
+
+  function toName(label) {
+    return label.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  }
+
+  function updatePreview() {
+    const preview = document.getElementById('previewContent');
+    if (!contentItems.length) {
+      preview.innerHTML = `
+        <div class="empty-preview">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+          <h3>Your form will appear here</h3>
+          <p>Add content elements to see a live preview</p>
+        </div>
+      `;
+      return;
+    }
+
+    const title = document.getElementById('titleInput').value.trim();
+    let html = '';
+    
+    if (title) {
+      html += `<h1 style="text-align: center; margin-bottom: 2rem; color: var(--gray-800);">${escapeHtml(title)}</h1>`;
+    }
+
+    for (const item of contentItems) {
+      if (item.type.startsWith('Text')) {
+        html += renderTextPreview(item);
+      } else if (item.type === 'TextInput' || item.type === 'TextArea' || item.type === 'DatePicker') {
+        html += renderAnswerPreview(item);
+      } else if (['single-choice', 'multiple-choice', 'dropdown', 'optin'].includes(item.type)) {
+        html += renderSelectionPreview(item);
+      }
+    }
+    preview.innerHTML = html;
+  }
+
+  function renderTextPreview(item) {
+    let tag = 'p', style = '';
+    switch(item.type) {
+      case 'TextHeading': 
+        tag = 'h1'; 
+        style = 'font-weight: 700; font-size: 2rem; margin: 1.5rem 0; color: var(--gray-800);'; 
+        break;
+      case 'TextSubheading': 
+        tag = 'h3'; 
+        style = 'font-weight: 600; font-size: 1.3rem; margin: 1rem 0; color: var(--gray-700);'; 
+        break;
+      case 'TextBody': 
+        tag = 'p'; 
+        style = 'font-size: 1rem; margin: 0.8rem 0; color: var(--gray-600); line-height: 1.6;'; 
+        break;
+      case 'TextCaption': 
+        tag = 'small'; 
+        style = 'font-size: 0.8rem; color: var(--gray-500); display: block; margin: 0.5rem 0;'; 
+        break;
+      default: tag = 'p';
+    }
+    const text = escapeHtml(item.text) || `[${item.type}]`;
+    return `<${tag} style="${style}">${text}</${tag}>`;
+  }
+
+  function renderAnswerPreview(item) {
+    const label = escapeHtml(item.label || '(No label)');
+    const required = item.required ? 'required' : '';
+    let inputHTML = '';
+
+    if (item.type === 'TextInput') {
+      inputHTML = `<input type="${item.inputType || 'text'}" name="${escapeHtml(item.name)}" placeholder="${label}" ${required} disabled style="width: 100%; padding: 0.8rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; background: var(--gray-50);">`;
+    } else if (item.type === 'TextArea') {
+      inputHTML = `<textarea name="${escapeHtml(item.name)}" placeholder="${label}" ${required} disabled style="width: 100%; padding: 0.8rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; background: var(--gray-50); min-height: 100px; resize: vertical;"></textarea>`;
+    } else if (item.type === 'DatePicker') {
+      inputHTML = `<input type="date" name="${escapeHtml(item.name)}" ${required} disabled style="width: 100%; padding: 0.8rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; background: var(--gray-50);">`;
+    }
+
+    return `<div class="preview-form-group">
+      <label style="display: block; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">${label}${item.required ? ' <span style="color: var(--danger);">*</span>' : ''}</label>
+      ${inputHTML}
+    </div>`;
+  }
+
+  function renderSelectionPreview(item) {
+    const label = escapeHtml(item.label || '(No label)');
+    const required = item.required ? 'required' : '';
+    const name = escapeHtml(item.name);
+
+    if (item.type === 'optin') {
+      return `<div class="preview-form-group">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: var(--gray-700);">
+          <input type="checkbox" name="${name}" ${required} disabled style="width: 18px; height: 18px; accent-color: var(--primary);">
+          ${label}
+        </label>
+      </div>`;
+    }
+
+    if (item.type === 'single-choice') {
+      let radios = '';
+      item.options.forEach((opt, idx) => {
+        radios += `<label class="radio-group" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.5rem; font-weight: normal;">
+          <input type="radio" name="${name}" value="${escapeHtml(opt)}" disabled style="width: 18px; height: 18px; accent-color: var(--primary);">
+          ${escapeHtml(opt)}
+        </label>`;
+      });
+      return `<fieldset class="preview-form-group" style="border: 2px solid var(--gray-200); border-radius: 8px; padding: 1rem; background: var(--gray-50);">
+        <legend style="font-weight: 600; color: var(--gray-700); padding: 0 0.5rem;">${label}${item.required ? ' <span style="color: var(--danger);">*</span>' : ''}</legend>
+        ${radios}
+      </fieldset>`;
+    }
+
+    if (item.type === 'multiple-choice') {
+      let checks = '';
+      item.options.forEach((opt, idx) => {
+        checks += `<label class="checkbox-group-preview" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.5rem; font-weight: normal;">
+          <input type="checkbox" name="${name}" value="${escapeHtml(opt)}" disabled style="width: 18px; height: 18px; accent-color: var(--primary);">
+          ${escapeHtml(opt)}
+        </label>`;
+      });
+      return `<fieldset class="preview-form-group" style="border: 2px solid var(--gray-200); border-radius: 8px; padding: 1rem; background: var(--gray-50);">
+        <legend style="font-weight: 600; color: var(--gray-700); padding: 0 0.5rem;">${label}${item.required ? ' <span style="color: var(--danger);">*</span>' : ''}</legend>
+        ${checks}
+      </fieldset>`;
+    }
+
+    if (item.type === 'dropdown') {
+      let optionsHTML = `<option value="">--Select--</option>`;
+      item.options.forEach(opt => {
+        optionsHTML += `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`;
+      });
+      return `<div class="preview-form-group">
+        <label style="display: block; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">${label}${item.required ? ' <span style="color: var(--danger);">*</span>' : ''}</label>
+        <select name="${name}" ${required} disabled style="width: 100%; padding: 0.8rem; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 1rem; background: var(--gray-50);">${optionsHTML}</select>
+      </div>`;
+    }
+
+    return '';
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/[&<>"']/g, function(m) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[m];
+    });
+  }
+
+  function updateJSON() {
+    const title = document.getElementById('titleInput').value || 'new screen';
+    const screenId = title.replace(/\s+/g, '_').toLowerCase() || 'new_screen';
+
+    const textItems = contentItems.filter(item => ['TextHeading', 'TextSubheading', 'TextBody', 'TextCaption'].includes(item.type));
+    const formItems = contentItems.filter(item => ['TextInput', 'TextArea', 'DatePicker', 'Radio'].includes(item.type));
+
+    const children = [];
+
+    // Add text items directly as children
+    textItems.forEach(item => {
+        if (item.text) {
+            children.push({
+                type: item.type,
+                text: item.text
+            });
+        }
+    });
+
+    // Add form block if form items exist
+    if (formItems.length > 0) {
+        const formChildren = [];
+        const payload = {};
+
+        formItems.forEach((item, index) => {
+            const fieldName = item.name || `field_${Math.random().toString(36).substr(2, 6)}`;
+            const fieldObj = {
+                type: item.type,
+                label: item.label || `Label ${index + 1}`,
+                name: fieldName,
+                required: !!item.required
+            };
+
+            if (item.type === 'TextInput') {
+                fieldObj['input-type'] = item.inputType || 'text';
+            }
+
+            if (item.type === 'Radio' || item.type === 'Dropdown' || item.type === 'MultiSelect') {
+                fieldObj.options = item.options || [];
+            }
+
+            formChildren.push(fieldObj);
+            payload[`screen_0_Label_${index}`] = `\${form.${fieldName}}`;
+        });
+
+        // Add footer inside form
+        formChildren.push({
+            type: "Footer",
+            label: "Continue",
+            "on-click-action": {
+                name: "complete",
+                payload: payload
+            }
+        });
+
+        children.push({
+            type: "Form",
+            name: "flow_path",
+            children: formChildren
+        });
+    } else if (textItems.length > 0) {
+        // Add a static footer if only text elements are present
+        children.push({
+            type: "Footer",
+            label: "Continue",
+            "on-click-action": {
+                name: "complete",
+                payload: {}
+            }
+        });
+    }
+
+    const jsonData = {
+        version: "7.0",
+        screens: [
+            {
+                id: screenId,
+                title: title,
+                terminal: true,
+                data: {},
+                layout: {
+                    type: "SingleColumnLayout",
+                    children: children
+                }
+            }
+        ]
+    };
+
+    document.getElementById('jsonOutput').textContent = JSON.stringify(jsonData, null, 2);
+}
+
+
+  function copyJSON() {
+    const jsonText = document.getElementById('jsonOutput').textContent;
+    navigator.clipboard.writeText(jsonText).then(() => {
+      // Create a toast notification
+      const toast = document.createElement('div');
+      toast.innerHTML = '✅ JSON copied to clipboard!';
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }).catch(() => {
+      alert('Failed to copy JSON to clipboard.');
+    });
+  }
+
+  // Update preview and JSON when title changes
+  document.getElementById('titleInput').addEventListener('input', () => {
+    updatePreview();
+    updateJSON();
+  });
+
+  // Initialize
+  renderContentList();
+  updatePreview();
+  updateJSON();
+</script>
+
+</body>
+</html>
